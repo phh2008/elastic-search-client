@@ -1,2 +1,2 @@
 # elastic-search-client
-elasticsearch api使用
+elasticsearch-rest-high-level-client 使用
