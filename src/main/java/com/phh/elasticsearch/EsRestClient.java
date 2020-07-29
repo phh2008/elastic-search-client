@@ -5,6 +5,7 @@ import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.Strings;
@@ -66,19 +67,19 @@ public class EsRestClient extends RestHighLevelClient {
         req.source(searchSrcBuilder);
         logger.info("elasticsearch dsl :" + req.toString());
         if (Strings.isNullOrEmpty(scrollId)) {
-            return this.search(req);
+            return this.search(req, RequestOptions.DEFAULT);
         } else {
             SearchScrollRequest scrollRequest = new SearchScrollRequest();
             scrollRequest.scrollId(scrollId);
             scrollRequest.scroll(keepAlive);
             try {
-                return this.searchScroll(scrollRequest);
+                return this.scroll(scrollRequest, RequestOptions.DEFAULT);
             } catch (ElasticsearchStatusException e) {
                 logger.error("searchScroll error", e);
                 if (RestStatus.NOT_FOUND == e.status()) {
                     //可能scrollId过期了，attempt search
                     //TODO 或还有其它方式，可提示调用端
-                    return this.search(req);
+                    return this.search(req, RequestOptions.DEFAULT);
                 } else {
                     throw e;
                 }
@@ -129,7 +130,7 @@ public class EsRestClient extends RestHighLevelClient {
         SearchRequest req = new SearchRequest(index);
         req.source(searchSrcBuilder);
         logger.info("elasticsearch dsl :" + req.toString());
-        return this.search(req);
+        return this.search(req, RequestOptions.DEFAULT);
     }
 
     public SearchResponse searchPage(String index, int pageNo, int pageSize, QueryBuilder queryBuilder, SortBuilder<?> sortBuilder) throws Exception {
@@ -146,7 +147,7 @@ public class EsRestClient extends RestHighLevelClient {
         SearchRequest req = new SearchRequest(index);
         req.source(searchSrcBuilder);
         logger.info("elasticsearch dsl :" + req.toString());
-        return this.search(req);
+        return this.search(req, RequestOptions.DEFAULT);
     }
 
 }

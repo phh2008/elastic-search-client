@@ -12,12 +12,12 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.rest.RestStatus;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,7 +33,7 @@ import java.util.Map;
 @Slf4j
 public class DocTest {
 
-    private EsRestClient client = new EsRestClient("http://120.78.85.72:99");
+    private EsRestClient client = new EsRestClient("http://127.0.0.1:9200");
 
 
     /**
@@ -43,14 +43,14 @@ public class DocTest {
      */
     @Test
     public void testAdd() throws IOException {
-        IndexRequest indexRequest = new IndexRequest("test_doc", "doc");
+        IndexRequest indexRequest = new IndexRequest("test_doc");
         Map<String, Object> source = new HashMap<>();
         source.put("id", 1000);
-        source.put("title", "中国农业银厚街支行2");
+        source.put("title", "中国农业银行东莞南城分行");
         source.put("test_not", "这是一个不存在的字段");
         indexRequest.source(source);
         indexRequest.id(source.get("id").toString());
-        IndexResponse res = client.index(indexRequest);
+        IndexResponse res = client.index(indexRequest, RequestOptions.DEFAULT);
         log.info(res.toString());
     }
 
@@ -62,13 +62,13 @@ public class DocTest {
 
     @Test
     public void testAdd2() throws IOException {
-        IndexRequest indexRequest = new IndexRequest("test_doc", "doc");
+        IndexRequest indexRequest = new IndexRequest("test_doc");
         Bank bank = new Bank();
         bank.setId(1000L);
         bank.setTitle("测试银行");
         indexRequest.source(JSON.toJSONString(bank), XContentType.JSON);
         indexRequest.id(bank.getId().toString());
-        IndexResponse res = client.index(indexRequest);
+        IndexResponse res = client.index(indexRequest, RequestOptions.DEFAULT);
         log.info(res.toString());
         log.info(res.status().getStatus() + "");
         log.info("{}", RestStatus.OK == res.status());
@@ -77,14 +77,14 @@ public class DocTest {
     @Test
     public void testAddBatch() throws IOException {
         BulkRequest bulkRequest = new BulkRequest();
-        IndexRequest indexRequest = new IndexRequest("test_doc", "doc");
+        IndexRequest indexRequest = new IndexRequest("test_doc");
         Map<String, Object> source = new HashMap<>();
         source.put("id", 1001);
         source.put("title", "中国农业银株洲支行");
         indexRequest.source(source);
         indexRequest.id(source.get("id").toString());
 
-        IndexRequest indexRequest2 = new IndexRequest("test_doc", "doc");
+        IndexRequest indexRequest2 = new IndexRequest("test_doc");
         Map<String, Object> source2 = new HashMap<>();
         source2.put("id", 1002);
         source2.put("title", "中国农业银长沙支行");
@@ -93,7 +93,7 @@ public class DocTest {
 
         bulkRequest.add(indexRequest);
         bulkRequest.add(indexRequest2);
-        BulkResponse res = client.bulk(bulkRequest);
+        BulkResponse res = client.bulk(bulkRequest, RequestOptions.DEFAULT);
         log.info(res.status().toString());
     }
 
@@ -105,9 +105,8 @@ public class DocTest {
     @Test
     public void testDel() throws IOException {
         DeleteRequest deleteRequest = new DeleteRequest("test_doc");
-        deleteRequest.type("doc");
         deleteRequest.id("paz3NGkBWmij0rZJtQyZ");
-        DeleteResponse res = client.delete(deleteRequest);
+        DeleteResponse res = client.delete(deleteRequest, RequestOptions.DEFAULT);
         log.info(res.status().toString());
     }
 
@@ -118,12 +117,12 @@ public class DocTest {
      */
     @Test
     public void testUpdate() throws IOException {
-        UpdateRequest updateRequest = new UpdateRequest("test_doc", "doc", "1002");
+        UpdateRequest updateRequest = new UpdateRequest("test_doc", "1002");
         Map<String, Object> map = new HashMap<>();
         map.put("id", 1002);
         map.put("title", "中国农业银长沙岳麓区支行");
         updateRequest.doc(map);
-        UpdateResponse res = client.update(updateRequest);
+        UpdateResponse res = client.update(updateRequest, RequestOptions.DEFAULT);
         log.info(res.status().toString());
     }
 
@@ -131,10 +130,10 @@ public class DocTest {
     public void testDateGeoType() throws IOException {
         String index_mapping = "{\"settings\":{\"number_of_shards\":3,\"number_of_replicas\":2},\"mappings\":{\"doc\":{\"properties\":{\"id\":{\"type\":\"long\",\"store\":true},\"title\":{\"type\":\"text\",\"store\":true,\"analyzer\":\"ik_max_word\",\"search_analyzer\":\"ik_max_word\"},\"createTime\":{\"type\":\"date\",\"store\":true,\"format\":\"yyyy-MM-dd HH:mm:ss\"},\"location\":{\"type\":\"geo_point\",\"store\":true}}}}}";
 
-        IndexRequest indexRequest = new IndexRequest("test_doc_geo", "doc");
+        IndexRequest indexRequest = new IndexRequest("test_doc_geo");
         Map<String, Object> source = new HashMap<>();
         source.put("id", 1003);
-        source.put("title", "中国农业银厚街万瑞中心支行");
+        source.put("title", "中国农业银东莞分行");
         source.put("createTime", "2019-03-01 17:33:00");
         source.put("location", new HashMap<String, Double>() {{
             put("lat", 22.9348461312);
@@ -149,7 +148,7 @@ public class DocTest {
 
         indexRequest.source(source);
         indexRequest.id(source.get("id").toString());
-        IndexResponse res = client.index(indexRequest);
+        IndexResponse res = client.index(indexRequest, RequestOptions.DEFAULT);
         log.info(res.toString());
 
     }

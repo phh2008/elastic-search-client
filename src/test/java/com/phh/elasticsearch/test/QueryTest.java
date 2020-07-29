@@ -43,7 +43,7 @@ import java.util.Map;
 @Slf4j
 public class QueryTest {
 
-    private EsRestClient client = new EsRestClient("http://120.78.85.72:99");
+    private EsRestClient client = new EsRestClient("127.0.0.1:9200");
 
     /**
      * scroll查询
@@ -52,12 +52,13 @@ public class QueryTest {
      */
     @Test
     public void testScrollQuery() throws Exception {
+        String indexName = "test_doc";
         SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
         searchBuilder.size(3)
-                .highlighter(new HighlightBuilder().field("branchName").preTags("<em>").postTags("</em>"))
-                .query(QueryBuilders.multiMatchQuery("农业银行", "branchName", "branchName.py")
+                .highlighter(new HighlightBuilder().field("title").preTags("<em>").postTags("</em>"))
+                .query(QueryBuilders.multiMatchQuery("农业银行", "title")
                         .type(MultiMatchQueryBuilder.Type.MOST_FIELDS));
-        SearchResponse resp = client.searchScroll("bank", null, TimeValue.timeValueMinutes(5), searchBuilder);
+        SearchResponse resp = client.searchScroll(indexName, null, TimeValue.timeValueMinutes(5), searchBuilder);
         List<Map<String, Object>> list = ElasticSearchUtils.getHitSourceAsMap(resp, true);
         log.info("scrollId:{}", resp.getScrollId());
         log.info(JSON.toJSONString(list, true));
